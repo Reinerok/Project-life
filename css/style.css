@@ -1,0 +1,33 @@
+body {
+    background-color: rgba(18, 32, 18, 0.897);
+    color: #00ff00;
+    margin: 0;
+}
+
+table.grid {
+    margin: 2rem auto;
+    box-sizing: border-box;
+    cursor: pointer;
+    border-spacing: 0px;
+    table-layout: fixed;
+}
+
+table.grid td.cell {
+    border: 1px solid #444;
+    border-right:  none;
+    border-bottom: none;
+    background-color: transparent;
+    box-sizing: border-box;
+}
+
+table.grid td.cell:last-child {
+    border-right: 1px solid #444;
+}
+
+table.grid tr.row:last-child td.cell{
+    border-bottom: 1px solid #444;
+}
+
+table.grid td.cell.alive {
+    background-color: #00ff00;
+}
