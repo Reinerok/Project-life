@@ -2,26 +2,23 @@ const GRID_WIDTH = 1280;
 const GRID_HEIGHT = 720;
 const GRID_ROWS = 36;
 const GRID_COLS = 64;
-const GAME_SPEED = 100;
+const GAME_SPEED = 1000;
 
 const grid = createGrid(GRID_ROWS, GRID_COLS);
 const nextGrid = createGrid(GRID_ROWS, GRID_COLS);
 
 let isPlaying = false;
-
 let interval = 0;
 
 const root = document.getElementById('root');
 
 const table = createTable(GRID_ROWS, GRID_COLS);
+
 createControls();
 
 function play() {
     computeNextGrid();
     updateView();
-    if (isPlaying) {
-    setTimeout(play,500);
-    }
 }
 
 function updateView() {
@@ -65,6 +62,7 @@ function createTable(rows, cols) {
         const cell = event.target;
         const rowIndex = cell.parentNode.rowIndex;
         const celIndex = cell.cellIndex;
+        
         const isCellAlive = grid[rowIndex][celIndex] === 1 ? true : false;
 
         grid[rowIndex][celIndex] = isCellAlive ? 0 : 1;
@@ -85,9 +83,11 @@ function createControls() {
         if (isPlaying) {
             isPlaying = false;
             this.textContent = 'play_arrow';
+            clearInterval(interval);
         } else {
             isPlaying = true;
             this.textContent = 'pause';
+            interval = setInterval(play, GAME_SPEED - speed);
             play();
         }
     });
@@ -98,6 +98,8 @@ function createControls() {
     restButton.addEventListener('click', function () {
         isPlaying = false;
         startButton.textContent = 'play_arrow';
+
+        clearInterval(interval);
         restartGrid();
         updateView();
     });
@@ -108,15 +110,28 @@ function createControls() {
     randomizeButton.addEventListener('click', function () {
         isPlaying = false;
         startButton.textContent = 'play_arrow';
-
+        clearInterval(interval);
         randomizeGrid();
         updateView();
+    });
+
+    let speed = 0;
+    const speedSlider = document.createElement('input');
+    speedSlider.type = 'range';
+    speedSlider.min = 0;
+    speedSlider.max = 900;
+    speedSlider.step = 100;
+    speedSlider.addEventListener('input', function(){
+        clearInterval(interval);
+        speed = this.value;
+
+        interval = isPlaying ? setInterval(play, GAME_SPEED - this.value) : 0;
     });
 
     const container = document.createElement('div');
     container.className = 'controls';
 
-    container.append(startButton, restButton, randomizeButton);
+    container.append(startButton, restButton, randomizeButton, speedSlider);
 
     root.appendChild(container);
 }
@@ -175,25 +190,25 @@ function applyRules(row, col) {
     const isCellAlive = grid[row][col];
     const numberOfNeighbors = countNeighbors(row, col);
 
-     if (isCellAlive) {
-         if (numberOfNeighbors < 2) {
+    if (isCellAlive) {
+        if (numberOfNeighbors < 2) {
             nextGrid[row][col] = 0;
-         } else if (numberOfNeighbors === 2 || numberOfNeighbors === 3) {
+        } else if (numberOfNeighbors === 2 || numberOfNeighbors === 3) {
             nextGrid[row][col] = 1;
-         } else if (numberOfNeighbors > 3) {
+        } else if (numberOfNeighbors > 3) {
             nextGrid[row][col] = 0;
-         }
-     } else {
-         if (numberOfNeighbors === 3) {
+        }
+    } else {
+        if (numberOfNeighbors === 3) {
             nextGrid[row][col] = 1;
         }
-     }
+    }
 }
 
 function countNeighbors(row, col) {
     let count = 0;
 
-    if(row - 1 >= 0) { // top
+    if (row - 1 >= 0) { // top
         if (grid[row - 1][col] === 1) count++;
     }
 
@@ -226,5 +241,26 @@ function countNeighbors(row, col) {
     }
 
     return count;
-
 }
+
+function drow(event) {
+    if (!event.target.classList.contains('cell')) return;
+
+    const cell = event.target;
+    const rowIndex = cell.parentNode.rowIndex;
+    const celIndex = cell.cellIndex;
+
+    const isCellAlive = grid[rowIndex][celIndex] === 1 ? true : false;
+
+    grid[rowIndex][celIndex] = isCellAlive ? 0 : 1;
+
+    cell.classList.add('alive');
+}
+
+table.addEventListener('mousedown', () => {
+    table.addEventListener('mousemove',drow);
+});
+
+table.addEventListener('mouseup', () => {
+    table.removeEventListener('mousemove',drow);
+});
