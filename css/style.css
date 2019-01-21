@@ -1,6 +1,5 @@
 body {
     background-color: #0A0A0A;
-    color: #00FF00;
     margin: 0;
 }
 
@@ -10,6 +9,15 @@ table.grid {
     cursor: pointer;
     border-spacing: 0px;
     table-layout: fixed;
+}
+
+table.grid.round {
+    border-spacing: 7px;
+}
+
+
+table.grid.round td.cell{
+    border-radius: 10px;
 }
 
 table.grid td.cell {

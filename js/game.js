@@ -26,7 +26,6 @@ function play() {
 }
 function colorCell(cell) {
     const colorButton = document.querySelector('.colors');
-    //console.log(colorButton);
     if (colorButton.classList.contains('colored')) {
     table.classList.add('color-table');
     
@@ -35,11 +34,8 @@ function colorCell(cell) {
         cell.style.backgroundColor = `rgb(${randomInteger(35,255)}, ${randomInteger(35,255)}, ${randomInteger(35,255)})`;
     } else {
         if (cell.classList.contains('alive')) { 
-            //console.log(`Живая`);
-            
         cell.style.backgroundColor = `rgb(0, 102, 255)`;
         } else {
-            //console.log(`Мертвая`);
         cell.style.backgroundColor = `rgb(0, 0, 0)`;
         }
     }
@@ -52,6 +48,15 @@ function updateView() {
             const isCellAlive = grid[i][j];
 
             cell.classList.toggle('alive', isCellAlive);
+            colorCell(cell);
+        }
+    }
+}
+
+function updateColor() {
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[i].length; j++) {
+            const cell = table.rows[i].cells[j];
             colorCell(cell);
         }
     }
@@ -145,8 +150,20 @@ function createControls() {
     colorButton.className = 'material-icons colors';
     colorButton.textContent = 'color_lens';
     colorButton.addEventListener('click', function () {
-        colorButton.classList.toggle('colored');
-        updateView();
+        this.classList.toggle('colored');
+        updateColor();
+    });
+
+    const round = document.createElement('button');
+    round.className = 'material-icons';
+    round.textContent = 'brightness_1';
+    round.addEventListener('click', function () {
+        if (this.textContent === 'brightness_1') {
+            this.textContent = 'crop_square';
+        } else {
+            this.textContent = 'brightness_1';
+        }
+        table.classList.toggle('round');
     });
 
     let speed = 0;
@@ -165,15 +182,13 @@ function createControls() {
     const container = document.createElement('div');
     container.className = 'controls';
 
-    container.append(startButton, restButton, randomizeButton, colorButton, speedSlider);
+    container.append(startButton, restButton, randomizeButton, colorButton, round, speedSlider);
 
     root.appendChild(container);
 }
 
 function createGrid(rows, cols) {
-
     const grid = [];
-
     for (let i = 0; i < rows; i++) {
         grid[i] = [];
 
@@ -278,8 +293,9 @@ function countNeighbors(row, col) {
 }
 
 function drow(event) {
-    if (!event.target.classList.contains('cell')) return;
-
+    if (event.which == 0) {
+        table.removeEventListener('mousemove',drow); 
+    } else {
     const cell = event.target;
     const rowIndex = cell.parentNode.rowIndex;
     const celIndex = cell.cellIndex;
@@ -290,24 +306,17 @@ function drow(event) {
 
     cell.classList.add('alive');
     colorCell(cell);
+    }
 }
 
 table.addEventListener('mousedown', () => {
-    table.addEventListener('mousemove',drow);
+    // снимаем выделение с элемента
+    this.onmousedown = () => false;
+    if (event.which === 1) {
+        this.addEventListener('mousemove',drow);
+    }
 });
 
 table.addEventListener('mouseup', () => {
-    table.removeEventListener('mousemove',drow);
+    this.removeEventListener('mousemove',drow);
 });
-/*
-Добавить режим с таким параметрами 
-
-table.grid {
-    border-spacing: 7px;
-}
-
-table.grid td.cell {
-    border-radius: 10px;
-}
-
-*/
